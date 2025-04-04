@@ -21,6 +21,7 @@ class MyApp extends StatelessWidget {
         '/home': (BuildContext context) => HomePage(),
         '/forgot': (BuildContext context) => ForgotPassword(),
         '/newAcc': (BuildContext context) => NewAccount(),
+        '/login': (BuildContext context) => LogIn(),
       },
     );
   }

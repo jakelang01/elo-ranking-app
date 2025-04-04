@@ -31,7 +31,6 @@ Widget BuildLogo() => Column(
     // App Logo
     SvgPicture.asset(
       'assets/icons/foosball.svg',
-      //colorFilter: const ColorFilter.mode(Colors.brown, BlendMode.srcIn),
       semanticsLabel: 'Elo Ranker Logo',
       height: 200,
       width: 200,
@@ -111,7 +110,7 @@ class _BuildInputFormState extends State<BuildInputForm> {
           String email = emailController.text;
           String password = passwordController.text;
       
-          if (!await emailValidation(email) ||
+          if (!await emailUserNameValidation(email) ||
               !await passwordValidation(email, password)) {
             setState(() {
               errorMessage = 'Invalid Credentials';
@@ -142,7 +141,7 @@ class _BuildInputFormState extends State<BuildInputForm> {
     });
   }
 
-  Future<bool> emailValidation(String email) async {
+  Future<bool> emailUserNameValidation(String email) async {
     if (email.isEmpty) {
       return false;
     }
@@ -150,9 +149,7 @@ class _BuildInputFormState extends State<BuildInputForm> {
     final database = await Connection.open(
       Endpoint(
         host: '10.0.2.2',
-        /*192.168.0.17*/
-        database: 'finance',
-        /*finance*/
+        database: 'elo-ranking',
         username: 'postgres',
         password: 'password',
       ),
@@ -160,7 +157,7 @@ class _BuildInputFormState extends State<BuildInputForm> {
     );
 
     final countEmail = await database.execute(
-      r'SELECT 1 FROM t_user WHERE email_address=$1',
+      r'SELECT 1 FROM t_user WHERE email_address=$1 OR user_name = $1',
       parameters: [email],
     );
 
@@ -177,8 +174,7 @@ class _BuildInputFormState extends State<BuildInputForm> {
     final database = await Connection.open(
       Endpoint(
         host: '10.0.2.2',
-        /*192.168.0.17*/
-        database: 'finance',
+        database: 'elo-ranking',
         username: 'postgres',
         password: 'password',
       ),
@@ -186,7 +182,7 @@ class _BuildInputFormState extends State<BuildInputForm> {
     );
 
     final dbPassword = await database.execute(
-      r'SELECT password, user_name FROM t_user WHERE email_address=$1',
+      r'SELECT password, user_name FROM t_user WHERE email_address=$1 OR user_name = $1',
       parameters: [email],
     );
 
@@ -210,15 +206,14 @@ class _BuildInputFormState extends State<BuildInputForm> {
     final database = await Connection.open(
       Endpoint(
         host: '10.0.2.2',
-        /*192.168.0.17*/
-        database: 'finance',
+        database: 'elo-ranking',
         username: 'postgres',
         password: 'password',
       ),
       settings: ConnectionSettings(sslMode: SslMode.disable),
     );
 
-    await database.execute(r'UPDATE t_user SET last_log_in = $1 WHERE email_address = $2', parameters: [currentDateTime, email]);
+    await database.execute(r'UPDATE t_user SET last_log_in = $1 WHERE email_address = $2 OR user_name = $2', parameters: [currentDateTime, email]);
 
     await database.close();
 
@@ -380,7 +375,7 @@ class EmailInput extends StatelessWidget {
         keyboardType: TextInputType.emailAddress,
         style: TextStyle(color: Colors.black),
         decoration: const InputDecoration(
-          hintText: 'Email',
+          hintText: 'Email/User Name',
           hintStyle: TextStyle(color: Colors.black),
           labelStyle: TextStyle(color: Colors.black),
           errorStyle: TextStyle(color: Colors.red),
